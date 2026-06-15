@@ -3,13 +3,14 @@ package main
 import (
 	"context"
 	"fmt"
+	"os"
 
 	"go-service/internal/database"
 	"go-service/internal/todo"
 )
 
 func main() {
-	conn, err := database.NewDB()
+	conn, err := database.NewDB(os.Getenv("DATABASE_URL"))
 	if err != nil {
 		panic(err)
 	}
