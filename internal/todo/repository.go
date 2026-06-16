@@ -12,7 +12,16 @@ type Repository struct {
 	conn *pgx.Conn
 }
 
-func NewRepository(conn *pgx.Conn) *Repository {
+type TodoRepository interface {
+	Create(title string) (int, error)
+	GetByID(id int) (Todo, error)
+	GetAll() ([]Todo, error)
+	UpdateTitle(id int, title string) error
+	MarkAsDone(id int) error
+	Delete(id int) error
+}
+
+func NewRepository(conn *pgx.Conn) TodoRepository {
 	return &Repository{
 		conn: conn,
 	}

@@ -7,7 +7,7 @@ import (
 	"testing"
 )
 
-func setupRepository(t *testing.T) *Repository {
+func setupRepository(t *testing.T) TodoRepository {
 	conn, err := database.NewDB(os.Getenv("DATABASE_TEST_URL"))
 
 	if err != nil {
