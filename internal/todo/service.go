@@ -36,6 +36,6 @@ func (s *Service) DeleteTodo(id int) error {
 	return s.repo.Delete(id)
 }
 
-func NewService(repo *Repository) *Service {
+func NewService(repo TodoRepository) *Service {
 	return &Service{repo}
 }
