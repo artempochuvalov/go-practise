@@ -7,7 +7,7 @@ import (
 )
 
 type Handler struct {
-	service *Service
+	service TodoService
 }
 
 type CreateTodoRequest struct {
@@ -22,7 +22,7 @@ type UpdateTodoTitleRequest struct {
 	Title string `json:"title"`
 }
 
-func NewHandler(service *Service) *Handler {
+func NewHandler(service TodoService) *Handler {
 	return &Handler{service: service}
 }
 

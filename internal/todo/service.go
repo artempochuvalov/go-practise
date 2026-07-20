@@ -1,9 +1,17 @@
 package todo
 
 import (
-	"errors"
 	"strings"
 )
+
+type TodoService interface {
+	CreateTodo(title string) (int, error)
+	GetTodo(id int) (Todo, error)
+	GetAllTodos() ([]Todo, error)
+	UpdateTitle(id int, title string) error
+	MarkAsDone(id int) error
+	DeleteTodo(id int) error
+}
 
 type Service struct {
 	repo TodoRepository
@@ -11,7 +19,7 @@ type Service struct {
 
 func (s *Service) CreateTodo(title string) (int, error) {
 	if strings.TrimSpace(title) == "" {
-		return 0, errors.New("title cannot be empty")
+		return 0, EmptyTitleError
 	}
 
 	return s.repo.Create(title)
@@ -24,7 +32,7 @@ func (s *Service) GetAllTodos() ([]Todo, error) {
 }
 func (s *Service) UpdateTitle(id int, title string) error {
 	if strings.TrimSpace(title) == "" {
-		return errors.New("title cannot be empty")
+		return EmptyTitleError
 	}
 
 	return s.repo.UpdateTitle(id, title)
@@ -36,6 +44,6 @@ func (s *Service) DeleteTodo(id int) error {
 	return s.repo.Delete(id)
 }
 
-func NewService(repo TodoRepository) *Service {
+func NewService(repo TodoRepository) TodoService {
 	return &Service{repo}
 }

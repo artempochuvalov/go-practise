@@ -74,7 +74,7 @@ func (r *Repository) GetByID(id int) (Todo, error) {
 	)
 
 	if errors.Is(err, pgx.ErrNoRows) {
-		return Todo{}, fmt.Errorf("todo not found")
+		return Todo{}, TodoNotFound
 	}
 
 	return todo, err

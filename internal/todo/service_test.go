@@ -32,7 +32,7 @@ func (r *MockRepository) Delete(id int) error {
 	return nil
 }
 
-func setupService() *Service {
+func setupService() TodoService {
 	r := NewMockRepository()
 	service := NewService(r)
 	return service
