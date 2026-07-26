@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
+	"log/slog"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -66,7 +67,12 @@ func (service *MockService) DeleteTodo(id int) error {
 
 func setupHandler() (*Handler, *MockService) {
 	service := NewMockService()
-	return NewHandler(service), service
+	var buf bytes.Buffer
+	log := slog.New(
+		slog.NewTextHandler(&buf, nil),
+	)
+
+	return NewHandler(service, log), service
 }
 
 func TestHandler_CreateTodo_Success(t *testing.T) {

@@ -6,20 +6,27 @@ import (
 	"os"
 
 	"go-service/internal/database"
+	"go-service/internal/logger"
+	"go-service/internal/middlewares"
 	"go-service/internal/todo"
 )
 
 func main() {
+	log := logger.NewLogger()
+
 	conn, err := database.NewDB(os.Getenv("DATABASE_URL"))
 	if err != nil {
-		panic(err)
+		log.Error("failed to connect to database", "error", err)
+		os.Exit(1)
 	}
+
+	log.Info("application started")
 
 	defer conn.Close(context.Background())
 
 	r := todo.NewRepository(conn)
 	service := todo.NewService(r)
-	handler := todo.NewHandler(service)
+	handler := todo.NewHandler(service, log)
 
 	mux := http.NewServeMux()
 
@@ -30,7 +37,14 @@ func main() {
 	mux.HandleFunc("PUT /todos/{id}", handler.UpdateTitle)
 	mux.HandleFunc("PATCH /todos/{id}/done", handler.MarkAsDone)
 
-	if err = http.ListenAndServe(":8080", mux); err != nil {
-		panic(err)
+	loggedMux := middlewares.LoggingMiddleware(log)(mux)
+
+	port := ":8080"
+
+	log.Info("starting http server", "address", port)
+
+	if err = http.ListenAndServe(port, loggedMux); err != nil {
+		log.Error("http server stopped", "error", err)
+		os.Exit(1)
 	}
 }

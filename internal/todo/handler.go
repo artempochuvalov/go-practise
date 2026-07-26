@@ -2,12 +2,14 @@ package todo
 
 import (
 	"encoding/json"
+	"log/slog"
 	"net/http"
 	"strconv"
 )
 
 type Handler struct {
 	service TodoService
+	logger  *slog.Logger
 }
 
 type CreateTodoRequest struct {
@@ -22,8 +24,8 @@ type UpdateTodoTitleRequest struct {
 	Title string `json:"title"`
 }
 
-func NewHandler(service TodoService) *Handler {
-	return &Handler{service: service}
+func NewHandler(service TodoService, logger *slog.Logger) *Handler {
+	return &Handler{service: service, logger: logger}
 }
 
 func (handler *Handler) CreateTodo(
@@ -35,12 +37,20 @@ func (handler *Handler) CreateTodo(
 	err := json.NewDecoder(r.Body).Decode(&req)
 	if err != nil {
 		http.Error(w, "invalid json", http.StatusBadRequest)
+		handler.logger.Warn(
+			"invalid request body",
+			"error", err,
+		)
 		return
 	}
 
 	id, err := handler.service.CreateTodo(req.Title)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
+		handler.logger.Warn(
+			"failed to create todo",
+			"error", err,
+		)
 		return
 	}
 
@@ -53,6 +63,10 @@ func (handler *Handler) CreateTodo(
 
 	if err = json.NewEncoder(w).Encode(resp); err != nil {
 		http.Error(w, "failed to encode response", http.StatusInternalServerError)
+		handler.logger.Error(
+			"unexpected response encoding",
+			"error", err,
+		)
 		return
 	}
 }
@@ -65,6 +79,10 @@ func (handler *Handler) GetAll(
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+		handler.logger.Warn(
+			"failed to get todos",
+			"error", err,
+		)
 		return
 	}
 
@@ -73,6 +91,10 @@ func (handler *Handler) GetAll(
 
 	if err := json.NewEncoder(w).Encode(todos); err != nil {
 		http.Error(w, "failed to encode response", http.StatusInternalServerError)
+		handler.logger.Error(
+			"unexpected response encoding",
+			"error", err,
+		)
 		return
 	}
 }
@@ -84,18 +106,30 @@ func (handler *Handler) GetByID(
 	id, err := strconv.Atoi(r.PathValue("id"))
 	if err != nil {
 		http.Error(w, "invalid id", http.StatusBadRequest)
+		handler.logger.Warn(
+			"unexpected todo's id",
+			"error", err,
+		)
 		return
 	}
 
 	todo, err := handler.service.GetTodo(id)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
+		handler.logger.Warn(
+			"failed to get todo",
+			"error", err,
+		)
 		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
 	if err := json.NewEncoder(w).Encode(todo); err != nil {
 		http.Error(w, "failed to encode response", http.StatusInternalServerError)
+		handler.logger.Error(
+			"unexpected response encoding",
+			"error", err,
+		)
 		return
 	}
 }
@@ -107,12 +141,20 @@ func (handler *Handler) Delete(
 	id, err := strconv.Atoi(r.PathValue("id"))
 	if err != nil {
 		http.Error(w, "invalid id", http.StatusBadRequest)
+		handler.logger.Warn(
+			"unexpected todo's id",
+			"error", err,
+		)
 		return
 	}
 
 	err = handler.service.DeleteTodo(id)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
+		handler.logger.Warn(
+			"failed to delete todo",
+			"error", err,
+		)
 		return
 	}
 
@@ -126,12 +168,20 @@ func (handler *Handler) MarkAsDone(
 	id, err := strconv.Atoi(r.PathValue("id"))
 	if err != nil {
 		http.Error(w, "invalid id", http.StatusBadRequest)
+		handler.logger.Warn(
+			"unexpected todo's id",
+			"error", err,
+		)
 		return
 	}
 
 	err = handler.service.MarkAsDone(id)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
+		handler.logger.Warn(
+			"failed to mark todo as done",
+			"error", err,
+		)
 		return
 	}
 
@@ -145,6 +195,10 @@ func (handler *Handler) UpdateTitle(
 	id, err := strconv.Atoi(r.PathValue("id"))
 	if err != nil {
 		http.Error(w, "invalid id", http.StatusBadRequest)
+		handler.logger.Warn(
+			"unexpected todo's id",
+			"error", err,
+		)
 		return
 	}
 
@@ -152,12 +206,20 @@ func (handler *Handler) UpdateTitle(
 	err = json.NewDecoder(r.Body).Decode(&req)
 	if err != nil {
 		http.Error(w, "invalid json", http.StatusBadRequest)
+		handler.logger.Warn(
+			"unexpected request body",
+			"error", err,
+		)
 		return
 	}
 
 	err = handler.service.UpdateTitle(id, req.Title)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
+		handler.logger.Warn(
+			"failed to update todo's title",
+			"error", err,
+		)
 		return
 	}
 
