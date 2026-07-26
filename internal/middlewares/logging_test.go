@@ -1,27 +1,15 @@
 package middlewares
 
 import (
-	"bytes"
 	"fmt"
-	"log/slog"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
 )
 
-func newLogger() (*slog.Logger, *bytes.Buffer) {
-	var buf bytes.Buffer
-
-	log := slog.New(
-		slog.NewTextHandler(&buf, nil),
-	)
-
-	return log, &buf
-}
-
 func TestLoggingMiddleware(t *testing.T) {
-	log, buf := newLogger()
+	log, buf := newTestLogger()
 
 	handler := LoggingMiddleware(log)(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusCreated)
@@ -56,7 +44,7 @@ func TestLoggingMiddleware(t *testing.T) {
 }
 
 func TestLoggingMiddleware_DefaultStatus(t *testing.T) {
-	log, buf := newLogger()
+	log, buf := newTestLogger()
 
 	var called bool
 	handler := LoggingMiddleware(log)(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

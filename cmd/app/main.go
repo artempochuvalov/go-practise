@@ -37,7 +37,8 @@ func main() {
 	mux.HandleFunc("PUT /todos/{id}", handler.UpdateTitle)
 	mux.HandleFunc("PATCH /todos/{id}/done", handler.MarkAsDone)
 
-	loggedMux := middlewares.LoggingMiddleware(log)(mux)
+	recoveredMux := middlewares.RecoverMiddleware(log)(mux)
+	loggedMux := middlewares.LoggingMiddleware(log)(recoveredMux)
 
 	port := ":8080"
 
