@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"os"
 
+	"go-service/internal/config"
 	"go-service/internal/database"
 	"go-service/internal/logger"
 	"go-service/internal/middlewares"
@@ -14,7 +15,13 @@ import (
 func main() {
 	log := logger.NewLogger()
 
-	conn, err := database.NewDB(os.Getenv("DATABASE_URL"))
+	config, err := config.Load()
+	if err != nil {
+		log.Error("failed to get project envirenments", "eror", err.Error())
+		os.Exit(1)
+	}
+
+	conn, err := database.NewDB(config.DatabaseURL)
 	if err != nil {
 		log.Error("failed to connect to database", "error", err)
 		os.Exit(1)
@@ -40,11 +47,9 @@ func main() {
 	recoveredMux := middlewares.RecoverMiddleware(log)(mux)
 	loggedMux := middlewares.LoggingMiddleware(log)(recoveredMux)
 
-	port := ":8080"
+	log.Info("starting http server", "address", config.Port)
 
-	log.Info("starting http server", "address", port)
-
-	if err = http.ListenAndServe(port, loggedMux); err != nil {
+	if err = http.ListenAndServe(config.Port, loggedMux); err != nil {
 		log.Error("http server stopped", "error", err)
 		os.Exit(1)
 	}
