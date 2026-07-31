@@ -2,6 +2,7 @@ package todo
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"errors"
 	"io"
@@ -35,32 +36,32 @@ func NewMockService() *MockService {
 	return &MockService{}
 }
 
-func (service *MockService) CreateTodo(title string) (int, error) {
+func (service *MockService) CreateTodo(ctx context.Context, title string) (int, error) {
 	service.receivedTitle = title
 	return 1, service.createErr
 }
 
-func (service *MockService) GetTodo(id int) (Todo, error) {
+func (service *MockService) GetTodo(ctx context.Context, id int) (Todo, error) {
 	service.receivedId = id
 	return service.getTodo, service.getTodoErr
 }
 
-func (service *MockService) GetAllTodos() ([]Todo, error) {
+func (service *MockService) GetAllTodos(ctx context.Context) ([]Todo, error) {
 	return service.getTodos, service.getTodosErr
 }
 
-func (service *MockService) UpdateTitle(id int, title string) error {
+func (service *MockService) UpdateTitle(ctx context.Context, id int, title string) error {
 	service.receivedId = id
 	service.receivedTitle = title
 	return service.updateTitleErr
 }
 
-func (service *MockService) MarkAsDone(id int) error {
+func (service *MockService) MarkAsDone(ctx context.Context, id int) error {
 	service.receivedId = id
 	return service.markAsDoneErr
 }
 
-func (service *MockService) DeleteTodo(id int) error {
+func (service *MockService) DeleteTodo(ctx context.Context, id int) error {
 	service.receivedId = id
 	return service.deleteErr
 }

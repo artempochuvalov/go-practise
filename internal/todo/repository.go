@@ -13,12 +13,12 @@ type Repository struct {
 }
 
 type TodoRepository interface {
-	Create(title string) (int, error)
-	GetByID(id int) (Todo, error)
-	GetAll() ([]Todo, error)
-	UpdateTitle(id int, title string) error
-	MarkAsDone(id int) error
-	Delete(id int) error
+	Create(ctx context.Context, title string) (int, error)
+	GetByID(ctx context.Context, id int) (Todo, error)
+	GetAll(ctx context.Context) ([]Todo, error)
+	UpdateTitle(ctx context.Context, id int, title string) error
+	MarkAsDone(ctx context.Context, id int) error
+	Delete(ctx context.Context, id int) error
 }
 
 func NewRepository(conn *pgx.Conn) TodoRepository {
@@ -27,11 +27,11 @@ func NewRepository(conn *pgx.Conn) TodoRepository {
 	}
 }
 
-func (r *Repository) GetAll() ([]Todo, error) {
+func (r *Repository) GetAll(ctx context.Context) ([]Todo, error) {
 	var todos []Todo
 
 	rows, err := r.conn.Query(
-		context.Background(),
+		ctx,
 		"SELECT id, title, completed FROM todos",
 	)
 
@@ -60,11 +60,11 @@ func (r *Repository) GetAll() ([]Todo, error) {
 	return todos, nil
 }
 
-func (r *Repository) GetByID(id int) (Todo, error) {
+func (r *Repository) GetByID(ctx context.Context, id int) (Todo, error) {
 	var todo Todo
 
 	err := r.conn.QueryRow(
-		context.Background(),
+		ctx,
 		"SELECT id, title, completed FROM todos WHERE id = $1",
 		id,
 	).Scan(
@@ -80,11 +80,11 @@ func (r *Repository) GetByID(id int) (Todo, error) {
 	return todo, err
 }
 
-func (r *Repository) Create(title string) (int, error) {
+func (r *Repository) Create(ctx context.Context, title string) (int, error) {
 	var id int
 
 	err := r.conn.QueryRow(
-		context.Background(),
+		ctx,
 		"INSERT INTO todos (title) VALUES ($1) RETURNING id",
 		title,
 	).Scan(&id)
@@ -96,9 +96,9 @@ func (r *Repository) Create(title string) (int, error) {
 	return id, nil
 }
 
-func (r *Repository) Delete(id int) error {
+func (r *Repository) Delete(ctx context.Context, id int) error {
 	result, err := r.conn.Exec(
-		context.Background(),
+		ctx,
 		"DELETE FROM todos WHERE id = $1",
 		id,
 	)
@@ -114,9 +114,9 @@ func (r *Repository) Delete(id int) error {
 	return err
 }
 
-func (r *Repository) MarkAsDone(id int) error {
+func (r *Repository) MarkAsDone(ctx context.Context, id int) error {
 	result, err := r.conn.Exec(
-		context.Background(),
+		ctx,
 		"UPDATE todos SET completed = true WHERE id = $1",
 		id,
 	)
@@ -132,16 +132,16 @@ func (r *Repository) MarkAsDone(id int) error {
 	return err
 }
 
-func (r *Repository) UpdateTitle(id int, title string) error {
+func (r *Repository) UpdateTitle(ctx context.Context, id int, title string) error {
 	result, err := r.conn.Exec(
-		context.Background(),
+		ctx,
 		"UPDATE todos SET title = $1 WHERE id = $2",
 		title,
 		id,
 	)
 
 	if err != nil {
-		return nil
+		return err
 	}
 
 	if result.RowsAffected() == 0 {

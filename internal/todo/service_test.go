@@ -1,6 +1,9 @@
 package todo
 
-import "testing"
+import (
+	"context"
+	"testing"
+)
 
 type MockRepository struct{}
 
@@ -8,27 +11,27 @@ func NewMockRepository() *MockRepository {
 	return &MockRepository{}
 }
 
-func (r *MockRepository) Create(title string) (int, error) {
+func (r *MockRepository) Create(ctx context.Context, title string) (int, error) {
 	return 1, nil
 }
 
-func (r *MockRepository) GetByID(id int) (Todo, error) {
+func (r *MockRepository) GetByID(ctx context.Context, id int) (Todo, error) {
 	return Todo{1, "title", false}, nil
 }
 
-func (r *MockRepository) GetAll() ([]Todo, error) {
+func (r *MockRepository) GetAll(ctx context.Context) ([]Todo, error) {
 	return []Todo{}, nil
 }
 
-func (r *MockRepository) UpdateTitle(id int, title string) error {
+func (r *MockRepository) UpdateTitle(ctx context.Context, id int, title string) error {
 	return nil
 }
 
-func (r *MockRepository) MarkAsDone(id int) error {
+func (r *MockRepository) MarkAsDone(ctx context.Context, id int) error {
 	return nil
 }
 
-func (r *MockRepository) Delete(id int) error {
+func (r *MockRepository) Delete(ctx context.Context, id int) error {
 	return nil
 }
 
@@ -52,7 +55,7 @@ func TestService_CreateTodo_Fail(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			_, err := service.CreateTodo(test.title)
+			_, err := service.CreateTodo(t.Context(), test.title)
 			if err == nil {
 				t.Fatalf("expected create to fail")
 			}
@@ -63,7 +66,7 @@ func TestService_CreateTodo_Fail(t *testing.T) {
 func TestService_CreateTodo_Success(t *testing.T) {
 	service := setupService()
 
-	id, err := service.CreateTodo("new todo")
+	id, err := service.CreateTodo(t.Context(), "new todo")
 	if err != nil {
 		t.Fatalf("create todo failed: %v", err)
 	}

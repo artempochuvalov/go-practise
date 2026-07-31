@@ -44,7 +44,7 @@ func (handler *Handler) CreateTodo(
 		return
 	}
 
-	id, err := handler.service.CreateTodo(req.Title)
+	id, err := handler.service.CreateTodo(r.Context(), req.Title)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		handler.logger.Warn(
@@ -75,7 +75,7 @@ func (handler *Handler) GetAll(
 	w http.ResponseWriter,
 	r *http.Request,
 ) {
-	todos, err := handler.service.GetAllTodos()
+	todos, err := handler.service.GetAllTodos(r.Context())
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -113,7 +113,7 @@ func (handler *Handler) GetByID(
 		return
 	}
 
-	todo, err := handler.service.GetTodo(id)
+	todo, err := handler.service.GetTodo(r.Context(), id)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
 		handler.logger.Warn(
@@ -148,7 +148,7 @@ func (handler *Handler) Delete(
 		return
 	}
 
-	err = handler.service.DeleteTodo(id)
+	err = handler.service.DeleteTodo(r.Context(), id)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
 		handler.logger.Warn(
@@ -175,7 +175,7 @@ func (handler *Handler) MarkAsDone(
 		return
 	}
 
-	err = handler.service.MarkAsDone(id)
+	err = handler.service.MarkAsDone(r.Context(), id)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
 		handler.logger.Warn(
@@ -213,7 +213,7 @@ func (handler *Handler) UpdateTitle(
 		return
 	}
 
-	err = handler.service.UpdateTitle(id, req.Title)
+	err = handler.service.UpdateTitle(r.Context(), id, req.Title)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
 		handler.logger.Warn(
